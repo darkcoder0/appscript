@@ -1,11 +1,17 @@
-
 let dataSheet = null;
+function autoRunTask() {
+   PropertiesService.getDocumentProperties().deleteProperty('isInitialized');
+    setSheet();
+    if (!PropertiesService.getDocumentProperties().getProperty('isInitialized')) {
+        sendEntireData(); // Send entire dataset if it's the first time
+        setInitialState(); // Set initial state after sending the data
+        PropertiesService.getDocumentProperties().setProperty('isInitialized', 'true'); // Mark as initialized
+    }
+}
 
 function onFileOpen(e) {
     PropertiesService.getDocumentProperties().deleteProperty('isInitialized');
     setSheet();
-
-    // Check if the initial state has already been set
     if (!PropertiesService.getDocumentProperties().getProperty('isInitialized')) {
         sendEntireData(); // Send entire dataset if it's the first time
         setInitialState(); // Set initial state after sending the data
@@ -126,15 +132,11 @@ function parseData(keys, dataOriginal) {
 
 function postDataToAPI(eventType, jsonData) {
     const url = "https://anysite.com/google-sheet-webhook";
-    // const secretKey = "01ee694e34ed924cf32cd432996fb2211901d48aeaf2f118870c3f9b5ebb9286";
     const payload = JSON.stringify({
         event: eventType,
         stones: jsonData,
-        token: 'token' // Replace with your actual token
+        token: 'token'
     });
-
-    // const signature = Utilities.computeHmacSha256Signature(payload, secretKey);
-    // const encodedSignature = Utilities.base64Encode(signature);
 
     Logger.log(`Posting data for event: ${eventType}`);
     const options = {
